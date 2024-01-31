@@ -21,7 +21,7 @@ pipeline {
      stage('Build Node JS Docker Image') {
             steps {
                 script {
-                  sh 'docker build -t devopshint/node-app-1.0 .'
+                  sh 'docker build -t cristian1993dev/k8s:latest .'
                 }
             }
         }
