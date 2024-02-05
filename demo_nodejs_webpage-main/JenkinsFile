@@ -1,0 +1,136 @@
+def helmProjectPath = "helm"
+
+pipeline {
+    agent any
+
+    tools {
+        nodejs 'node'
+    }
+
+    stages {
+     
+        stage('Git Checkout') {
+            steps {
+               git branch: 'main', changelog: false, poll: false, url: 'https://github.com/jaiswaladi246/demo_nodejs_webpage.git'
+            }
+        }
+
+        stage('Install Dependencies') {
+                steps {
+                      sh "npm install"
+            }
+           
+        }
+       
+        stage('Docker Build & Push') {
+                steps {
+                    script {
+                        withDockerRegistry(credentialsId: '264a4dd6-9077-4bb4-8b8a-a9fe2e19a1eb', toolName: 'docker') {
+                           
+                            sh "docker build -t ${IMAGE_NAME} ."
+                            sh "docker tag ${IMAGE_NAME} ${USERNAME_DOCKERHUB}/${REPOSITORY_NAME}:${TAG_NAME}"
+                            sh "docker push ${USERNAME_DOCKERHUB}/${REPOSITORY_NAME}:${TAG_NAME}"
+                           
+                        }
+                    }
+            }
+           
+        }
+       
+        stage('Docker run') {
+            
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: '264a4dd6-9077-4bb4-8b8a-a9fe2e19a1eb', toolName: 'docker') {
+                        //def containerName = '${IMAGE_NAME}'
+                        
+                        // Verifica se il container esiste prima di eseguire docker run
+                        def existingContainer = sh(script: "docker ps -aqf name=${IMAGE_NAME} | tr -d '\n'", returnStatus: true).toString().trim()
+        
+                        if (existingContainer) {
+                            echo "Il container ${IMAGE_NAME} esiste già. Skipping docker run."
+                        } else {
+                            // Altrimenti, esegui il comando docker run
+                            sh "docker run -d --name ${IMAGE_NAME} -p 8081:8081 ${USERNAME_DOCKERHUB}/${REPOSITORY_NAME}:${TAG_NAME}"
+                        }
+                    }
+                }
+            }
+           
+        }
+        
+        stage('Helm Create') {
+            steps {
+                script {
+                        sh 'helm create ${IMAGE_NAME}'
+                    
+                }
+            }
+        }
+        
+        stage('Helm Package') {
+            steps {
+                script {
+                    dir("${IMAGE_NAME}") {
+                        
+                        sh "pwd"
+                        sh "helm package ."
+                        sh 'ls'
+                        def tgzFile = sh(script: 'ls *.tgz | sed \'s/\\.tgz$//\'', returnStdout: true).trim()
+
+                        
+                    }
+                }
+            }
+        }
+        
+            
+            
+        stage('Helm Install') {
+            steps {
+                
+                
+                    
+                    script {
+                        dir("${IMAGE_NAME}"){
+                            
+                        def releaseExists = false
+                        def tgzFile = sh(returnStdout: true, script: 'ls *.tgz').trim()
+                        def baseName = tgzFile.take(tgzFile.lastIndexOf('.'))
+                        
+                            
+                            
+                        if (sh(script: "helm list --short | grep \${IMAGE_NAME}", returnStatus: true) == 0) {
+                            releaseExists = true
+                        } else {
+                            releaseExists = false
+                        }
+                        
+                        
+                        
+                        if (releaseExists) {
+                            println("Helm release with image \${imageName} already exists.")
+                        } else {
+                            sh 'helm install ${IMAGE_NAME} ./${tgzFile} --version 1.0 --set image.repository=index.docker.io/${USERNAME_DOCKERHUB}/${IMAGE_NAME},image.tag=${TAG_NAME},service.port=8085,image.pullPolicy=Always'
+                            //come ultimo step ricordarsi di lanciare il comando kubectl per il portforward
+                        }
+                        
+                        
+                     }
+                     
+                    }
+                    
+                                    
+            }
+        }
+        
+    }
+    
+    post{
+        always{
+            cleanWs()
+        }
+    }
+    
+    
+}
