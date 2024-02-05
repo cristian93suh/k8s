@@ -1,0 +1,37 @@
+# File e cartelle da ignorare
+.BrowserLock/
+.CFUserTextEncoding
+.DS_Store
+.angular-config.json
+.anydesk/
+.bash_history
+.config/
+.docker/
+.git-credentials
+.gitconfig
+.kube/
+.lemminx/
+.lesshst
+.m2/
+.mongodb/
+.npm/
+.python_history
+.ssh/
+.sts4/
+.swiftpm/
+.viminfo
+.vscode/
+.zprofile
+.zsh_history
+.zsh_sessions/
+.zshrc
+Applications/
+.helmignore
+cucumber-it.pdf
+Documents/
+Filmato\ del\ 27-04-23\ alle\ 15.00\ #3.mov
+Library/
+Movies/
+Music/
+Pictures/
+Public/
