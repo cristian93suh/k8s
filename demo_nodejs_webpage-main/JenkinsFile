@@ -112,7 +112,7 @@ pipeline {
                             println("Helm release with image \${imageName} already exists. Upgrading...")
                             sh "helm upgrade ${IMAGE_NAME} ./${tgzFile} --version 1.0 --set image.repository=index.docker.io/${USERNAME_DOCKERHUB}/${IMAGE_NAME},image.tag=${TAG_NAME},service.port=8085,image.pullPolicy=Always"
                         } else {
-                            sh 'helm install ${IMAGE_NAME} ./${tgzFile} --version 1.0 --set image.repository=index.docker.io/${USERNAME_DOCKERHUB}/${IMAGE_NAME},image.tag=${TAG_NAME},service.port=8085,image.pullPolicy=Always'
+                            sh "helm install ${IMAGE_NAME} ./${tgzFile} --version 1.0 --set image.repository=index.docker.io/${USERNAME_DOCKERHUB}/${IMAGE_NAME},image.tag=${TAG_NAME},service.port=8085,image.pullPolicy=Always"
                             //come ultimo step ricordarsi di lanciare il comando kubectl per il portforward
                         }
                         
