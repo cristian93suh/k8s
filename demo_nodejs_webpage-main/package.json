@@ -1,7 +1,8 @@
 {
   "dependencies": {
     "express": "*",
-    "prom-client": "^15.1.0"
+    "prom-client": "^15.1.0",
+    "prometheus-api-metrics": "^3.2.2"
   },
   "scripts": {
     "start": "node app.js"
