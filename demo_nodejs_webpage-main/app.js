@@ -1,9 +1,6 @@
 const express = require('express');
 const app = express();
 const path = require('path');
-var apiMetrics = require('prometheus-api-metrics');
-
-app.use(apiMetrics());
 
 app.get('/', (req,res) => {
   res.sendFile(path.join(__dirname+'/index.html'));
