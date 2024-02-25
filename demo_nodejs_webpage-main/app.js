@@ -1,48 +1,39 @@
 const express = require('express');
+const promClient = require('prom-client');
 const app = express();
 const path = require('path');
-const prometheus = require('prom-client');
 
-// Inizializza il registro metriche di Prometheus
-const register = new prometheus.Registry();
+const PORT = 8081;
 
-// Definisci e registra una metrica personalizzata
-const httpRequestDurationMicroseconds = new prometheus.Histogram({
-  name: 'http_request_duration_ms',
-  help: 'Duration of HTTP requests in ms',
-  labelNames: ['method', 'route', 'statusCode'],
-  registers: [register],
-  buckets: [0.1, 5, 15, 50, 100, 500]
+// Inizializza il registro per le metriche di Prometheus
+const register = new promClient.Registry();
+promClient.collectDefaultMetrics({ register });
+
+// Definisci metriche personalizzate
+const customMetric = new promClient.Gauge({
+  name: 'custom_metric',
+  help: 'Descrizione della metrica personalizzata'
 });
 
-// Middleware per registrare la durata delle richieste HTTP
-app.use((req, res, next) => {
-  const start = Date.now();
-  res.on('finish', () => {
-    const durationInMilliseconds = Date.now() - start;
-    httpRequestDurationMicroseconds
-      .labels(req.method, req.route.path, res.statusCode)
-      .observe(durationInMilliseconds);
-  });
-  next();
+// Registra metriche personalizzate nel registro
+register.registerMetric(customMetric);
+
+// Rotta per esporre le metriche
+app.get('/metrics', (req, res) => {
+  res.set('Content-Type', register.contentType);
+  res.end(register.metrics());
 });
 
+// Altri gestori di rotte dell'applicazione
 app.get('/', (req,res) => {
   res.sendFile(path.join(__dirname+'/index.html'));
 });
 
 app.get('/about', (req,res) => {
-  res.sendFile(path.join(__dirname+'/about.html'));
-});
-
-// Esponi le metriche di Prometheus tramite un endpoint HTTP
-app.get('/metrics', async (req, res) => {
-  res.set('Content-Type', register.contentType);
-  res.end(await register.metrics());
+    res.sendFile(path.join(__dirname+'/about.html'));
 });
 
 // Avvia il server
-app.listen(8081, () => {
-    console.log('Listening on port 8081');
+app.listen(PORT, () => {
+    console.log(`Listening on port ${PORT}`);
 });
-
