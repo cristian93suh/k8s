@@ -42,7 +42,7 @@ app.get('/metrics', async (req, res) => {
 });
 
 // Avvia il server
-const PORT = process.env.PORT || 8081;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+app.listen(8081, () => {
+    console.log('Listening on port 8081');
 });
+
