@@ -1,5 +1,5 @@
 def helmProjectPath = "helm"
-
+def imageExisted
 pipeline {
     agent any
 
@@ -11,37 +11,40 @@ pipeline {
      
         stage('Git Checkout') {
             steps {
-               git branch: 'main', changelog: false, poll: false, url: 'https://github.com/jaiswaladi246/demo_nodejs_webpage.git'
+               git branch: 'master', url: 'https://github.com/cristian93suh/k8s.git'
             }
         }
 
         stage('Install Dependencies') {
                 steps {
-                      sh "npm install"
-            }
-           
+                    script{
+                        dir("demo_nodejs_webpage-main"){
+    
+                          sh "npm install --save prom-client@12"
+                        }
+                    }
+                }           
         }
        
         stage('Docker Build & Push') {
                 steps {
                     script {
-                        withDockerRegistry(credentialsId: '264a4dd6-9077-4bb4-8b8a-a9fe2e19a1eb', toolName: 'docker') {
-                           
+                        dir("demo_nodejs_webpage-main"){
+                        withDockerRegistry(credentialsId: 'aab6b169-d497-4006-9f11-25197e53ce03', toolName: 'docker') {                           
                             sh "docker build -t ${IMAGE_NAME} ."
                             sh "docker tag ${IMAGE_NAME} ${USERNAME_DOCKERHUB}/${REPOSITORY_NAME}:${TAG_NAME}"
                             sh "docker push ${USERNAME_DOCKERHUB}/${REPOSITORY_NAME}:${TAG_NAME}"
-                           
+                            }
                         }
                     }
             }
            
         }
        
-        stage('Docker run') {
-            
+        stage('Docker run') {     
             steps {
                 script {
-                    withDockerRegistry(credentialsId: '264a4dd6-9077-4bb4-8b8a-a9fe2e19a1eb', toolName: 'docker') {
+                    withDockerRegistry(credentialsId: 'aab6b169-d497-4006-9f11-25197e53ce03', toolName: 'docker') {                        
                         //def containerName = '${IMAGE_NAME}'
                         
                         // Verifica se il container esiste prima di eseguire docker run
@@ -49,6 +52,8 @@ pipeline {
         
                         if (existingContainer) {
                             echo "Il container ${IMAGE_NAME} esiste già. Skipping docker run."
+                            sh "docker pull ${USERNAME_DOCKERHUB}/${REPOSITORY_NAME}:${TAG_NAME}"
+                            imageExist= "index.docker.io/${USERNAME_DOCKERHUB}/${REPOSITORY_NAME}:${TAG_NAME}"
                         } else {
                             // Altrimenti, esegui il comando docker run
                             sh "docker run -d --name ${IMAGE_NAME} -p 8081:8081 ${USERNAME_DOCKERHUB}/${REPOSITORY_NAME}:${TAG_NAME}"
@@ -62,8 +67,9 @@ pipeline {
         stage('Helm Create') {
             steps {
                 script {
-                        sh 'helm create ${IMAGE_NAME}'
-                    
+                    dir("demo_nodejs_webpage-main") {          
+                        sh 'helm create ${IMAGE_NAME}' //${IMAGE_NAME}
+                    }       
                 }
             }
         }
@@ -71,34 +77,24 @@ pipeline {
         stage('Helm Package') {
             steps {
                 script {
-                    dir("${IMAGE_NAME}") {
-                        
+                    dir("demo_nodejs_webpage-main/${IMAGE_NAME}") {  
                         sh "pwd"
                         sh "helm package ."
                         sh 'ls'
                         def tgzFile = sh(script: 'ls *.tgz | sed \'s/\\.tgz$//\'', returnStdout: true).trim()
-
-                        
                     }
                 }
             }
         }
         
-            
-            
         stage('Helm Install') {
             steps {
-                
-                
-                    
                     script {
-                        dir("${IMAGE_NAME}"){
+                        dir("demo_nodejs_webpage-main/${IMAGE_NAME}"){
                             
                         def releaseExists = false
                         def tgzFile = sh(returnStdout: true, script: 'ls *.tgz').trim()
                         def baseName = tgzFile.take(tgzFile.lastIndexOf('.'))
-                        
-                            
                             
                         if (sh(script: "helm list --short | grep \${IMAGE_NAME}", returnStatus: true) == 0) {
                             releaseExists = true
@@ -106,16 +102,15 @@ pipeline {
                             releaseExists = false
                         }
                         
-                        
-                        
                         if (releaseExists) {
                             println("Helm release with image \${imageName} already exists. Upgrading...")
+                            sh "kubectl scale --replicas=0 deployment/k8s"
                             sh "helm upgrade ${IMAGE_NAME} ./${tgzFile} --version 1.0 --set image.repository=index.docker.io/${USERNAME_DOCKERHUB}/${IMAGE_NAME},image.tag=${TAG_NAME},service.port=8081,image.pullPolicy=Always"
+                            sh "kubectl scale --replicas=1 deployment/k8s"
                         } else {
                             sh "helm install ${IMAGE_NAME} ./${tgzFile} --version 1.0 --set image.repository=index.docker.io/${USERNAME_DOCKERHUB}/${IMAGE_NAME},image.tag=${TAG_NAME},service.port=8081image.pullPolicy=Always"
                             //come ultimo step ricordarsi di lanciare il comando kubectl per il portforward
                         }
-                        
                         
                      }
                      
@@ -131,7 +126,6 @@ pipeline {
         always{
             cleanWs()
         }
-    }
-    
+    }    
     
 }
