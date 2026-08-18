@@ -1,0 +1,135 @@
+{
+  "settimana": "17-23 agosto 2026",
+  "data_analisi": "17 agosto 2026",
+  "run_numero": 8,
+  "account": "@we_are_apulia",
+  "metriche": {
+    "followers_oggi": 801,
+    "followers_11agosto": 765,
+    "growth_ultimi_6giorni": 36,
+    "ritmo_reale": 5.1,
+    "ritmo_necessario": 14.2,
+    "percentuale_ritmo": "36%",
+    "proiezione_31agosto": 873,
+    "target_31agosto": 1000,
+    "mancano_follower": 199,
+    "giorni_rimanenti": 14,
+    "gap_editoriale": "3 giorni (nessun post dal 14/08)"
+  },
+  "performance_post": {
+    "miglior_post": {
+      "nome": "MOLO",
+      "tipo": "carosello",
+      "reach": 1756,
+      "commenti": 12,
+      "salvataggi": 6,
+      "status": "validato, mai pubblicato (variante B-E disponibili)"
+    },
+    "top_performer_storico": {
+      "nome": "Cena Zio Pietro",
+      "reach": 2011,
+      "pattern": "arco narrativo sconosciuto→amico"
+    }
+  },
+  "problemi_critici": [
+    {
+      "id": 1,
+      "tipo": "bloccante",
+      "titolo": "Foto cena etichettata male",
+      "file": "cene/luglio-2026/8-luglio-cene.jpg",
+      "descrizione": "Mostra sentiero di trekking, non cena",
+      "location": "Storie Giorno 3 (venerdì 22/08), Storia 1"
+    },
+    {
+      "id": 2,
+      "tipo": "conflitto",
+      "titolo": "Foto identica su Storie e Post stesso giorno",
+      "file": "discover-paesi-pugliesi/agosto-2026/7-agosto-...jpg",
+      "descrizione": "Hook quasi identico"
+    },
+    {
+      "id": 3,
+      "tipo": "conflitto",
+      "titolo": "Foto locandina 'Cena' ricompare 3 volte",
+      "file": "cene/luglio-2026/6-luglio-cene.jpg",
+      "descrizione": "Su Locandina + Carosello Variante A + Story"
+    },
+    {
+      "id": 4,
+      "tipo": "correzione",
+      "titolo": "Giorni settimana sbagliati nelle storie",
+      "descrizione": "22/08 etichettato 'venerdì' (è sabato), 23/08 'sabato' (è domenica)"
+    }
+  ],
+  "eventi_reali": [
+    {
+      "nome": "Astronomia Bosco delle Pianelle",
+      "data": "21 agosto 2026",
+      "ora": "18:00",
+      "locazione": "Martina Franca",
+      "posti_rimasti": "1 (dato 12/08 — verificare prima di pubblicare)",
+      "cta": "BOSCO"
+    },
+    {
+      "nome": "Cena & nuove conoscenze",
+      "data": "22 agosto 2026",
+      "ora": "21:00",
+      "locazione": "Bari",
+      "posti_rimasti": "5 (dato 12/08 — verificare prima di pubblicare)",
+      "cta": "PIATTO"
+    }
+  ],
+  "competitor_analysis": {
+    "visitpuglia": "account dormiente",
+    "cosafareinpuglia": "abbandonato (ultimo post 7 anni fa)",
+    "_zest_family": {
+      "followers": 208900,
+      "cadenza": "quasi quotidiana, max gap 2gg",
+      "lezione": "cadenza minima fissa 2-3 post/sett"
+    },
+    "weroad_it": {
+      "followers": 1300000,
+      "nuovo": "ha lanciato WeMeet (app amicizie da eventi) — entra nella nostra nicchia",
+      "lezione": "contenuti più grezzi, frequenti"
+    },
+    "sipandcreate_eventi": {
+      "followers": 29200,
+      "cadenza": "ogni 2-3 giorni",
+      "lezione": "1-2 format fissi ricorrenti"
+    },
+    "kessart_puglia": {
+      "followers": 41400,
+      "nota": "competitor più diretto",
+      "lezione": "volto umano ricorrente associato al brand"
+    }
+  },
+  "pattern_confermati": [
+    {
+      "pattern": "Gap editoriale 5+ giorni → crescita crolla",
+      "conferme": 3,
+      "affidabilita": "Più solido — appena riconfermato, gap riaperto 14/08"
+    },
+    {
+      "pattern": "Numero preciso di persone nel hook",
+      "conferme": 2,
+      "esempi": "42 persone, 75 persone"
+    },
+    {
+      "pattern": "Arco narrativo sconosciuto → amico",
+      "conferme": 2
+    },
+    {
+      "pattern": "CTA legata a dettaglio specifico (es. VELA=84 commenti, BOMBETTA=9, MOLO=5, TREKKING=0)",
+      "conferme": 4
+    }
+  ],
+  "reel_principale": {
+    "angolo": "Come smettere di aspettare che il gruppo WhatsApp decida per te",
+    "tema_principale": "Dolore (immobilismo) + Rivalsa (essere tu a rompere lo stallo)",
+    "fonte": "VEB.it, 01/08/2026, 'Sindrome del Progetto Ipotetico'",
+    "cta": "Scrivi TIMONE nei commenti",
+    "varianti": 3
+  },
+  "verdetto_analista": "IN RITARDO, in peggioramento. Ritmo reale al 52% del necessario il 15/08 (run 7), sceso al 36% il 17/08. Gap editoriale riaperto.",
+  "raccomandazione_prioritaria": "Richiudere subito il gap editoriale — Varianti B-E del carosello 'MOLO' (reach 1.756) sono pronte e mai pubblicate"
+}
