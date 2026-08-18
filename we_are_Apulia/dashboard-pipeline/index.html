@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pipeline Monitor | We Are Apulia</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #1B4B6B;
+            --accent: #C9622A;
+            --success: #5BA368;
+            --warning: #E8B923;
+            --error: #C85A54;
+            --dark: #2C2C2C;
+            --light: #F5F3F0;
+            --white: #FFFFFF;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        .status-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .status-card {
+            background: var(--white);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid var(--light);
+            transition: all 0.3s ease;
+        }
+
+        .status-card.running {
+            border-color: var(--warning);
+            background: rgba(232, 185, 35, 0.05);
+        }
+
+        .status-card.success {
+            border-color: var(--success);
+            background: rgba(91, 163, 104, 0.05);
+        }
+
+        .status-card.error {
+            border-color: var(--error);
+            background: rgba(200, 90, 84, 0.05);
+        }
+
+        .status-card.pending {
+            border-color: #ccc;
+            background: rgba(200, 200, 200, 0.03);
+        }
+
+        .status-label {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .status-value {
+            font-size: 0.9em;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .status-icon {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-bottom: 8px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+        }
+
+        .status-card.running .status-icon {
+            background: var(--warning);
+            animation: pulse 1.5s infinite;
+        }
+
+        .status-card.success .status-icon {
+            background: var(--success);
+        }
+
+        .status-card.error .status-icon {
+            background: var(--error);
+        }
+
+        .status-card.pending .status-icon {
+            background: #999;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .pipeline-timeline {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid var(--light);
+        }
+
+        .timeline-title {
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 25px;
+            font-size: 1.1em;
+        }
+
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .timeline-item {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 20px;
+            padding: 15px;
+            border-left: 3px solid var(--light);
+            background: #FAFAF8;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-item.running {
+            border-left-color: var(--warning);
+            background: rgba(232, 185, 35, 0.08);
+        }
+
+        .timeline-item.success {
+            border-left-color: var(--success);
+            background: rgba(91, 163, 104, 0.08);
+        }
+
+        .timeline-item.error {
+            border-left-color: var(--error);
+            background: rgba(200, 90, 84, 0.08);
+        }
+
+        .timeline-item.pending {
+            border-left-color: #ddd;
+        }
+
+        .timeline-time {
+            font-size: 0.9em;
+            color: #666;
+            font-family: 'Courier New', monospace;
+        }
+
+        .timeline-agent {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 4px;
+        }
+
+        .timeline-status {
+            display: inline-block;
+            font-size: 0.8em;
+            padding: 4px 10px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+
+        .timeline-status.running {
+            background: var(--warning);
+            color: var(--white);
+        }
+
+        .timeline-status.success {
+            background: var(--success);
+            color: var(--white);
+        }
+
+        .timeline-status.error {
+            background: var(--error);
+            color: var(--white);
+        }
+
+        .timeline-status.pending {
+            background: #ddd;
+            color: #666;
+        }
+
+        .timeline-details {
+            font-size: 0.9em;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .timeline-details strong {
+            color: var(--dark);
+        }
+
+        .link-routines {
+            display: inline-block;
+            margin-top: 8px;
+            font-size: 0.85em;
+        }
+
+        .link-routines a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .link-routines a:hover {
+            text-decoration: underline;
+        }
+
+        .alerts {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid var(--light);
+            border-left: 4px solid var(--error);
+        }
+
+        .alerts-title {
+            color: var(--error);
+            font-weight: 700;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .alert-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            background: rgba(200, 90, 84, 0.08);
+            border-radius: 6px;
+            border-left: 3px solid var(--error);
+            font-size: 0.95em;
+        }
+
+        .alert-item strong {
+            color: var(--error);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .no-alerts {
+            color: var(--success);
+            font-weight: 600;
+            padding: 12px;
+        }
+
+        .legend {
+            background: var(--light);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+            font-size: 0.9em;
+        }
+
+        .legend-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--dark);
+        }
+
+        .legend-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .legend-dot.running { background: var(--warning); }
+        .legend-dot.success { background: var(--success); }
+        .legend-dot.error { background: var(--error); }
+        .legend-dot.pending { background: #999; }
+
+        @media (max-width: 768px) {
+            .timeline-item {
+                grid-template-columns: 1fr;
+            }
+            .timeline-time {
+                order: -1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔄 Pipeline Monitor</h1>
+            <p class="subtitle">@we_are_apulia — Status real-time agents in cascata</p>
+        </header>
+
+        <div class="status-overview">
+            <div class="status-card success">
+                <div class="status-icon">✓</div>
+                <div class="status-label">Analista</div>
+                <div class="status-value">Completato</div>
+            </div>
+
+            <div class="status-card success">
+                <div class="status-icon">✓</div>
+                <div class="status-label">Trend Scout</div>
+                <div class="status-value">Completato</div>
+            </div>
+
+            <div class="status-card running">
+                <div class="status-icon">⟳</div>
+                <div class="status-label">Copywriter</div>
+                <div class="status-value">In esecuzione</div>
+            </div>
+
+            <div class="status-card pending">
+                <div class="status-icon">⧐</div>
+                <div class="status-label">Fact Checker</div>
+                <div class="status-value">In attesa</div>
+            </div>
+
+            <div class="status-card pending">
+                <div class="status-icon">⧐</div>
+                <div class="status-label">Copy Reviewer</div>
+                <div class="status-value">In attesa</div>
+            </div>
+
+            <div class="status-card pending">
+                <div class="status-icon">⧐</div>
+                <div class="status-label">Dashboard</div>
+                <div class="status-value">In attesa</div>
+            </div>
+        </div>
+
+        <div class="pipeline-timeline">
+            <div class="timeline-title">📊 Timeline Esecuzione</div>
+
+            <div class="timeline">
+                <!-- Analista -->
+                <div class="timeline-item success">
+                    <div>
+                        <div class="timeline-time">09:00 — 09:18</div>
+                    </div>
+                    <div>
+                        <div class="timeline-agent">01. Apulia Growth Analyst</div>
+                        <span class="timeline-status success">COMPLETATO</span>
+                        <div class="timeline-details">
+                            <strong>Output:</strong> playbook.md (TOP-1 angle + competitor summary + trend)<br>
+                            <strong>Azione:</strong> Commit playbook.md → Ha triggerato Dashboard → Ha aggiornato pipeline_state.json
+                        </div>
+                        <div class="link-routines">
+                            <a href="https://claude.ai/code/routines" target="_blank">→ Vedi sessione</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trend Scout -->
+                <div class="timeline-item success">
+                    <div>
+                        <div class="timeline-time">09:00 — 09:16</div>
+                    </div>
+                    <div>
+                        <div class="timeline-agent">02. Apulia Trend & Audience Scout</div>
+                        <span class="timeline-status success">COMPLETATO</span>
+                        <div class="timeline-details">
+                            <strong>Output:</strong> trend_audience.md (hook + audience profile)<br>
+                            <strong>Azione:</strong> Commit trend_audience.md → Ha aggiornato pipeline_state.json → Ha triggerato Copywriter (entrambi genitori pronti)
+                        </div>
+                        <div class="link-routines">
+                            <a href="https://claude.ai/code/routines" target="_blank">→ Vedi sessione</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Copywriter -->
+                <div class="timeline-item running">
+                    <div>
+                        <div class="timeline-time">09:20 — in esecuzione</div>
+                    </div>
+                    <div>
+                        <div class="timeline-agent">03. Apulia Editorial Copywriter</div>
+                        <span class="timeline-status running">IN ESECUZIONE</span>
+                        <div class="timeline-details">
+                            <strong>Input:</strong> playbook.md + trend_audience.md<br>
+                            <strong>Output (atteso):</strong> piano_editoriale.md (reel 3 versioni + locandine)<br>
+                            <strong>ETA:</strong> ~09:35 (15 min da adesso)
+                        </div>
+                        <div class="link-routines">
+                            <a href="https://claude.ai/code/routines" target="_blank">→ Vedi sessione</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboard -->
+                <div class="timeline-item success">
+                    <div>
+                        <div class="timeline-time">09:20 — 09:25</div>
+                    </div>
+                    <div>
+                        <div class="timeline-agent">04. Apulia Performance Dashboard</div>
+                        <span class="timeline-status success">COMPLETATO</span>
+                        <div class="timeline-details">
+                            <strong>Triggerato da:</strong> Analista (dipendenza singola)<br>
+                            <strong>Output:</strong> analisi_performance.md + dashboard.html<br>
+                            <strong>Azione:</strong> Nessun trigger a cascade (è terminale)
+                        </div>
+                        <div class="link-routines">
+                            <a href="https://claude.ai/code/routines" target="_blank">→ Vedi sessione</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fact Checker (attesa) -->
+                <div class="timeline-item pending">
+                    <div>
+                        <div class="timeline-time">09:35 (atteso)</div>
+                    </div>
+                    <div>
+                        <div class="timeline-agent">05. Apulia Fact & Format Checker</div>
+                        <span class="timeline-status pending">IN ATTESA</span>
+                        <div class="timeline-details">
+                            <strong>Sarà triggerato da:</strong> Copywriter (quando finisce)<br>
+                            <strong>Input (atteso):</strong> piano_editoriale.md<br>
+                            <strong>Output (atteso):</strong> review_struttura.md (foto existence check)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Copy Reviewer (attesa) -->
+                <div class="timeline-item pending">
+                    <div>
+                        <div class="timeline-time">09:35 (atteso)</div>
+                    </div>
+                    <div>
+                        <div class="timeline-agent">06. Apulia Copy & VG-SC Reviewer</div>
+                        <span class="timeline-status pending">IN ATTESA</span>
+                        <div class="timeline-details">
+                            <strong>Sarà triggerato da:</strong> Copywriter (stesso momento di Fact Checker)<br>
+                            <strong>Input (atteso):</strong> piano_editoriale.md<br>
+                            <strong>Output (atteso):</strong> review_copy.md (VG-SC validation)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="alerts">
+            <div class="alerts-title">⚠️ Alerting</div>
+            <div class="no-alerts">✓ Nessun errore rilevato finora</div>
+            <!-- Se ci fossero errori, apparirebbero qui:
+            <div class="alert-item">
+                <strong>Copywriter bloccato</strong>
+                trend_audience.md non trovato — Trend Scout non ha finito in tempo
+            </div>
+            -->
+        </div>
+
+        <div class="legend">
+            <div class="legend-title">📖 Legenda Status</div>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <div class="legend-dot success"></div>
+                    <span>Completato (✓)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot running"></div>
+                    <span>In esecuzione (⟳)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot pending"></div>
+                    <span>In attesa (⧐)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot error"></div>
+                    <span>Errore (✗)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Questo file è statico per ora, ma in futuro potrebbe:
+        // 1. Leggere pipeline_state/{data}.json da GitHub via API
+        // 2. Aggiornare status in tempo reale
+        // 3. Mostrare errori se ci sono
+
+        console.log('Pipeline Monitor caricato. Se gli agent partono, aggiorna manualmente questa pagina.');
+    </script>
+</body>
+</html>
